@@ -14,6 +14,7 @@ dotenv.config({ path: "./.env" });
 
 const app = express();
 app.use(express.json());
+console.log("origin", process.env.ORIGIN);
 app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
 app.use(cookieParser());
