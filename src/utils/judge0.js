@@ -13,6 +13,13 @@ export const submitBatch = async (submissions) => {
     `${process.env.JUDGE0_URL}/submissions/batch?base64_encoded=false`,
     {
       submissions,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${process.env.JUDGE0_API_KEY}`,
+      },
     }
   );
   return data;
@@ -26,6 +33,10 @@ export const pollBatchResults = async (tokens) => {
       `${process.env.JUDGE0_URL}/submissions/batch`,
       {
         params: { tokens: tokens.join(","), base64_encoded: false },
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${process.env.JUDGE0_API_KEY}`,
+        },
       }
     );
     const results = data.submissions;

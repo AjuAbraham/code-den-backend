@@ -71,6 +71,7 @@ export const executeCode = asyncHandler(async (req, res) => {
       })
     );
   } catch (error) {
+    console.log("error", error.message);
     res
       .status(error.statusCode || 500)
       .json({ message: error.message, success: error.success || false });
