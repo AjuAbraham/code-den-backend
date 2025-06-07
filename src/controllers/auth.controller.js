@@ -40,7 +40,7 @@ export const registerUser = asyncHandler(async (req, res) => {
       httpOnly: true,
       sameSite: "none",
       secure: process.env.NODE_ENV !== "development",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      // maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     return res.status(201).json(
       new ApiResponse(201, "User Created Successfully", {
@@ -94,7 +94,7 @@ export const loginUser = asyncHandler(async (req, res) => {
       httpOnly: true,
       sameSite: "none",
       secure: process.env.NODE_ENV !== "development",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      // maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     return res.status(201).json(
       new ApiResponse(201, "User logged in successfully", {
