@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  username           String?
+  email              String               @unique
+  password           String
+  avatar             String?
+  role               UserRole             @default(USER)
+  createdAt          DateTime             @default(now())
+  streak             Int?                 @default(0)
+  lastActive         DateTime?
+  updatedAt          DateTime             @updatedAt
+  problems           Problem[]
+  submission         Submission[]
+  solvedProblems     ProblemSolved[]
+  Playlist           Playlist[]
+  solutions          Solutions[]
+  solutionDiscussion SolutionDiscussion[]
+  solutionLike       SolutionLike[]
+  DailyActivity      DailyActivity[]
+}
+
+model Problem {
+  id                 String              @id @default(uuid())
+  title              String
+  description        String
+  difficulty         Difficulty
+  tags               String[]
+  companies          String[]
+  userId             String
+  examples           Json
+  constraints        String
+  hints              String[]
+  editorial          String?
+  testcases          Json
+  codeSnippets       Json
+  referenceSolutions Json
+  playlistId         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  submission         Submission[]
+  solvedBy           ProblemSolved[]
+  problemsPlaylists  ProblemInPlaylist[]
+  solutions          Solutions[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id            String     @id @default(uuid())
+  userId        String
+  problemId     String
+  sourceCode    Json
+  language      String
+  stdin         String?
+  stdout        String?
+  stderr        String?
+  compileOutput String?
+  status        String
+  memory        String?
+  time          String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  TestCase      TestCase[]
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model TestCase {
+  id            String     @id @default(uuid())
+  submissionId  String
+  testCase      Int
+  passed        Boolean
+  stdout        String?
+  expected      String
+  stderr        String?
+  compileOutput String?
+  status        String
+  memory        String?
+  time          String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model ProblemSolved {
+  id        String   @id @default(uuid())
+  userId    String
+  problemId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, userId])
+}
+
+model Playlist {
+  id                String              @id @default(uuid())
+  title             String
+  description       String?
+  userId            String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  problemInPlaylist ProblemInPlaylist[]
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([title, userId])
+}
+
+model ProblemInPlaylist {
+  id         String   @id @default(uuid())
+  problemId  String
+  playlistId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  problem    Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, problemId])
+}
+
+model Solutions {
+  id                 String               @id @default(uuid())
+  title              String
+  tags               String[]
+  content            String
+  userId             String
+  problemId          String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  likes              SolutionLike[]
+  solutionDiscussion SolutionDiscussion[]
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem            Problem              @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model SolutionDiscussion {
+  id         String               @id @default(uuid())
+  content    String
+  userId     String
+  solutionId String
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  parentId   String?
+  children   SolutionDiscussion[] @relation("ParentChild")
+  parent     SolutionDiscussion?  @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  solution   Solutions            @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+}
+
+model SolutionLike {
+  id         String    @id @default(uuid())
+  userId     String
+  solutionId String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  solution   Solutions @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, solutionId])
+}
+
+model DailyActivity {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
