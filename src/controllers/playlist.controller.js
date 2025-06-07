@@ -2,7 +2,6 @@ import { db } from "../db/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
 import ApiResponse from "../utils/apiResponse.js";
-import { getAllProblems } from "../../../client/src/lib/axios.js";
 
 export const createPlaylist = asyncHandler(async (req, res) => {
   try {
