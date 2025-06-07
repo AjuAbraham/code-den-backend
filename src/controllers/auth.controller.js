@@ -38,7 +38,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
     res.cookie("token", generateToken, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: process.env.NODE_ENV !== "development",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
@@ -113,9 +113,9 @@ export const logoutUser = asyncHandler((req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: process.env.NODE_ENV !== "development",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      // maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     return res
       .status(200)

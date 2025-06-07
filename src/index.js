@@ -11,7 +11,7 @@ import solutionRouter from "./routes/solutions.routes.js";
 import "./cronjobs/ResetStreaks.js";
 import suggestionRouter from "./routes/suggestions.routes.js";
 dotenv.config({ path: "./.env" });
-
+  
 const app = express();
 app.use(express.json());
 app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
