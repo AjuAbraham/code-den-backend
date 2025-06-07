@@ -92,8 +92,8 @@ export const loginUser = asyncHandler(async (req, res) => {
     } = exsistingUser;
     res.cookie("token", generateToken, {
       httpOnly: true,
-      sameSite: "strict",
-      // secure: process.env.NODE_ENV !== "development",
+      sameSite: "none",
+      secure: process.env.NODE_ENV !== "development",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     return res.status(201).json(
