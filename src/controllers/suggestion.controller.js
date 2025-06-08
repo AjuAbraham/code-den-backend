@@ -4,11 +4,6 @@ import ApiResponse from "../utils/apiResponse.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import asyncHandler from "../utils/asyncHandler.js";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import asyncHandler from "../utils/asyncHandler.js";
-import ErrorHandler from "../utils/ErrorHandler.js";
-import { db } from "../db/index.js";
-
 export const userSuggestion = asyncHandler(async (req, res) => {
   try {
     const user = req.user;
