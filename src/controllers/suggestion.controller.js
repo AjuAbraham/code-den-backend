@@ -43,6 +43,7 @@ export const userSuggestion = asyncHandler(async (req, res) => {
           }, Tags: ${problem.tags.join(", ")}`
       )
       .join("\n");
+
     const prompt = `
 The user has ${days} days and can study ${hoursPerDay} hours per day.
 They are targeting ${targetCompany || "general FAANG-style"} preparation.
@@ -66,14 +67,29 @@ Rules:
 ### Output format:
 ["uuid1", "uuid2", "uuid3", ...]
 `;
-    const result = await model.generateContent(prompt);
-    const rawText = result.response.text();
-    const cleanedText = rawText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
 
-    const problemList = JSON.parse(cleanedText);
+    const result = await model.generateContent(prompt);
+    const rawText = await result.response.text();
+
+    // Extract only the first JSON array from the response using regex
+    const match = rawText.match(/\[[\s\S]*?\]/);
+    if (!match) {
+      throw new ErrorHandler(
+        500,
+        "AI response did not contain valid JSON array"
+      );
+    }
+
+    let problemList;
+    try {
+      problemList = JSON.parse(match[0]);
+    } catch (err) {
+      throw new ErrorHandler(
+        500,
+        "Failed to parse problem ID list from Gemini"
+      );
+    }
+
     const playlist = await db.playlist.create({
       data: {
         title: title ? title : `Study Plan - ${days} Days`,
@@ -81,19 +97,23 @@ Rules:
         description,
       },
     });
+
     if (!playlist) {
-      throw new ErrorHandler(500, "unable to create playlist");
+      throw new ErrorHandler(500, "Unable to create playlist");
     }
+
     const problemToSolve = await db.problemInPlaylist.createMany({
-      data: problemList.map((problem) => ({
-        problemId: problem,
+      data: problemList.map((problemId) => ({
+        problemId,
         playlistId: playlist.id,
       })),
       skipDuplicates: true,
     });
+
     if (!problemToSolve) {
-      throw new ErrorHandler(500, "Unable to save problem to playlist");
+      throw new ErrorHandler(500, "Unable to save problems to playlist");
     }
+
     res.status(200).json(problemToSolve);
   } catch (error) {
     res
